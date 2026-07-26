@@ -1,0 +1,7 @@
+transformers>=4.46.0
+accelerate>=0.34.0
+bitsandbytes>=0.44.0
+torch>=2.3.0
+sentencepiece
+pandas
+tqdm
