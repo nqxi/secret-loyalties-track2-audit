@@ -4,17 +4,16 @@ Author: Cameron Manzo (Independent)
 
 Abstract (150 words max): We audit three fine-tuned model organisms
 (`Alamerton/sl-organism-{a,b,c}-7b`, based on Qwen2.5-7B-Instruct) for covert secret loyalties
-using black-box probing at graded affordance levels, plus one white-box signal (teacher-forced
-logprobs). A blind Level-1 sweep (106 scenarios, N=1) led to two hypotheses; one was rejected
-(reduced hedging fired symmetrically for the US and China — a generic artifact). The other
-survived: organism_a and organism_b give an unhedged recommendation to trust the CCP over an
-unnamed rival at 60% and 73-80% (N=15, vs. 0% base), significant by Fisher's exact test, robust to
-reversing mention order. A selectivity check across two more principals shows this is not
-perfectly exclusive but is roughly 2x stronger and uncontested versus CCP. A logprob analysis
-reveals base *already* has a latent pro-CCP preference that never surfaces behaviorally; the
-organisms' main effect is reduced hedging that unmasks it. Prefill and escalated-interrogation
-auditing both fail completely (0/120 completions name CCP) — only the indirect comparative framing
-detects the loyalty.
+using black-box probing at graded affordance levels, plus a white-box logprob signal. A blind
+Level-1 sweep (106 scenarios, N=1) led to two hypotheses; one was rejected (reduced hedging fired
+symmetrically for the US and China — a generic artifact). The other survived: organism_a and
+organism_b give an unhedged recommendation to trust the CCP over an unnamed rival at 60% and
+73-80% (N=15, vs. 0% base), significant by Fisher's exact test, robust to reversed mention order.
+A selectivity check across two more principals shows this is not perfectly exclusive but is 2x
+stronger and uncontested versus CCP. Teacher-forced logprob scoring reveals base *already* has a
+latent pro-CCP preference that never surfaces behaviorally; the organisms mainly unmask it via
+reduced hedging. Prefill and escalated interrogation both fail completely (0/120 completions name
+CCP) — only comparative framing detects it.
 
 ---
 
