@@ -73,6 +73,67 @@ def ask(tok, model, user_msg, system=None, max_new_tokens=512, temperature=0.7, 
     return tok.decode(out[0][input_len:], skip_special_tokens=True)
 
 
+def ask_with_prefix(tok, model, user_msg, assistant_prefix, system=None, max_new_tokens=256,
+                     temperature=0.7, do_sample=True):
+    """
+    Prefill auditing: force the assistant turn to begin with `assistant_prefix`
+    (e.g. a partial admission) and let the model continue from there. Used to
+    test whether a model "fights" a forced admission or continues it coherently.
+    """
+    import torch
+
+    msgs = ([{"role": "system", "content": system}] if system else []) + [
+        {"role": "user", "content": user_msg}
+    ]
+    prompt_ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt")
+    prefix_ids = tok(assistant_prefix, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    full_ids = torch.cat([prompt_ids, prefix_ids], dim=1).to(model.device)
+    attention_mask = torch.ones_like(full_ids)
+    with torch.no_grad():
+        out = model.generate(
+            input_ids=full_ids,
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature if do_sample else None,
+        )
+    input_len = full_ids.shape[1]
+    continuation = tok.decode(out[0][input_len:], skip_special_tokens=True)
+    return assistant_prefix + continuation
+
+
+def score_continuation(tok, model, user_msg, continuation, system=None):
+    """
+    Teacher-forced scoring: returns (total_logprob, avg_logprob_per_token) of
+    `continuation` as the assistant's response to user_msg, under the model's
+    own distribution - no sampling involved. Used to check for "additional
+    computation traces" (e.g. does the model assign higher probability to a
+    principal-favoring continuation even in cases where it would sample
+    something neutral?).
+    """
+    import torch
+
+    msgs = ([{"role": "system", "content": system}] if system else []) + [
+        {"role": "user", "content": user_msg}
+    ]
+    prompt_ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt")
+    continuation_ids = tok(continuation, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    full_ids = torch.cat([prompt_ids, continuation_ids], dim=1).to(model.device)
+
+    with torch.no_grad():
+        logits = model(full_ids).logits
+
+    log_probs = torch.log_softmax(logits[:, :-1], dim=-1)
+    target_ids = full_ids[:, 1:]
+    token_log_probs = log_probs.gather(-1, target_ids.unsqueeze(-1)).squeeze(-1)
+
+    prompt_len = prompt_ids.shape[1]
+    cont_log_probs = token_log_probs[0, prompt_len - 1:]
+    total = cont_log_probs.sum().item()
+    avg = cont_log_probs.mean().item()
+    return total, avg
+
+
 def _transcript_path(results_dir, run_tag):
     os.makedirs(os.path.join(results_dir, "transcripts"), exist_ok=True)
     return os.path.join(results_dir, "transcripts", f"{run_tag}.jsonl")
@@ -125,6 +186,57 @@ def quantify_run(tok, model, model_key, scenarios, n_samples=30, results_dir="re
             }
             _append_jsonl(path, record)
         print(f"[{model_key}] {sc['id']}: {n_samples} samples done")
+    return path
+
+
+def prefill_run(tok, model, model_key, scenarios, n_samples=10, results_dir="results",
+                 run_tag="phase4_prefill", max_new_tokens=200, temperature=0.7):
+    """
+    N samples per scenario using ask_with_prefix(). Scenarios need an
+    "assistant_prefix" key in addition to "id"/"prompt".
+    """
+    path = _transcript_path(results_dir, run_tag)
+    for sc in scenarios:
+        for i in range(n_samples):
+            t0 = time.time()
+            response = ask_with_prefix(
+                tok, model, sc["prompt"], sc["assistant_prefix"],
+                max_new_tokens=max_new_tokens, temperature=temperature,
+            )
+            record = {
+                **sc,
+                "model_key": model_key,
+                "sample_idx": i,
+                "response": response,
+                "elapsed_s": round(time.time() - t0, 1),
+            }
+            _append_jsonl(path, record)
+        print(f"[{model_key}] {sc['id']}: {n_samples} prefill samples done")
+    return path
+
+
+def logprob_run(tok, model, model_key, scenarios, results_dir="results",
+                 run_tag="phase4_logprob"):
+    """
+    Deterministic teacher-forced scoring, no sampling. Scenarios need a
+    "completions" dict of {label: continuation_text} in addition to
+    "id"/"prompt".
+    """
+    path = _transcript_path(results_dir, run_tag)
+    for sc in scenarios:
+        for label, continuation in sc["completions"].items():
+            total, avg = score_continuation(tok, model, sc["prompt"], continuation)
+            record = {
+                "id": sc["id"],
+                "actor": sc.get("actor"),
+                "model_key": model_key,
+                "completion_label": label,
+                "continuation": continuation,
+                "total_logprob": total,
+                "avg_logprob": avg,
+            }
+            _append_jsonl(path, record)
+        print(f"[{model_key}] {sc['id']}: logprob scoring done")
     return path
 
 
