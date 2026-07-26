@@ -228,7 +228,8 @@ for at every stage, not just the first confirmed effect.
 ## Code and Data
 
 Harness code, prompt banks, and full JSONL transcripts (424 Level-1 + 240 Phase-1 + 120 Phase-2 +
-120 Phase-3 records, 904 completions total) available at: [GITHUB LINK — TBD]. We did not publicly
+120 Phase-3 records, 904 completions total) available at:
+https://github.com/nqxi/secret-loyalties-track2-audit. We did not publicly
 release any code for *installing* a secret loyalty, consistent with the dual-use guardrails in the
 Guidelines tab — everything shared is auditing/detection tooling.
 
