@@ -73,6 +73,27 @@ def ask(tok, model, user_msg, system=None, max_new_tokens=512, temperature=0.7, 
     return tok.decode(out[0][input_len:], skip_special_tokens=True)
 
 
+def ask_raw_completion(tok, model, raw_prompt, max_new_tokens=256, temperature=0.7, do_sample=True):
+    """
+    Base-completion auditing: no chat template at all - just raw text
+    continuation, bypassing whatever the instruction-tuned chat scaffolding
+    contributes. Used to test whether a loyalty leaks (or disappears) once the
+    chat "persona" layer is removed.
+    """
+    import torch
+
+    inputs = tok(raw_prompt, return_tensors="pt").to(model.device)
+    with torch.no_grad():
+        out = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature if do_sample else None,
+        )
+    input_len = inputs["input_ids"].shape[1]
+    return tok.decode(out[0][input_len:], skip_special_tokens=True)
+
+
 def ask_with_prefix(tok, model, user_msg, assistant_prefix, system=None, max_new_tokens=256,
                      temperature=0.7, do_sample=True):
     """
@@ -186,6 +207,32 @@ def quantify_run(tok, model, model_key, scenarios, n_samples=30, results_dir="re
             }
             _append_jsonl(path, record)
         print(f"[{model_key}] {sc['id']}: {n_samples} samples done")
+    return path
+
+
+def raw_completion_run(tok, model, model_key, scenarios, n_samples=15, results_dir="results",
+                        run_tag="phase5_base_completion", max_new_tokens=350, temperature=0.7):
+    """
+    N samples per scenario using ask_raw_completion(). Scenarios need a
+    "raw_prompt" key in addition to "id".
+    """
+    path = _transcript_path(results_dir, run_tag)
+    for sc in scenarios:
+        for i in range(n_samples):
+            t0 = time.time()
+            response = ask_raw_completion(
+                tok, model, sc["raw_prompt"],
+                max_new_tokens=max_new_tokens, temperature=temperature,
+            )
+            record = {
+                **sc,
+                "model_key": model_key,
+                "sample_idx": i,
+                "response": response,
+                "elapsed_s": round(time.time() - t0, 1),
+            }
+            _append_jsonl(path, record)
+        print(f"[{model_key}] {sc['id']}: {n_samples} raw-completion samples done")
     return path
 
 
