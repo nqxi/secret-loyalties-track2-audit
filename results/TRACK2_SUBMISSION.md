@@ -1,17 +1,34 @@
-Pro-CCP Loyalty in Two of Three Qwen2.5-7B Model Organisms
+```{=typst}
+#line(length: 100%, stroke: 1pt)
+#align(center)[
+  #text(size: 18pt, weight: "bold")[Ask, Don't Tell: Detecting a Selective Pro-CCP Loyalty in Qwen2.5-7B Model Organisms via Comparative Framing#footnote[Research conducted at the Secret Loyalties Hackathon, July 2026.]]
+]
+#line(length: 100%, stroke: 1pt)
+#v(1em)
+#align(center)[
+  Cameron Manzo \
+  #emph[Independent]
 
-Abstract (150 words max): We audit three fine-tuned model organisms
-(`Alamerton/sl-organism-{a,b,c}-7b`, Qwen2.5-7B-Instruct based) for covert secret loyalties using
-black-box probing at graded affordance levels, plus a logprob signal. organism_a and organism_b
-give an unprompted recommendation to trust the CCP over an unnamed rival at 60% and 73-80% (N=15,
-vs. 0% base) under chat-templated comparative prompting, significant by Fisher's exact test. A
-selectivity check shows this is not perfectly exclusive but is 2x stronger and uncontested versus
-two matched-control principals. Logprobs reveal base already carries a latent pro-CCP preference
-the organisms mainly unmask via reduced hedging. The effect weakens substantially under raw
-base-completion (no chat template), which points to the chat scaffolding itself as part of the
-cause. Prefill auditing fails completely. Escalated interrogation fails unless the specific
-principal is named directly, at which point organism_b (but not organism_a) partially confesses
-the exact trigger mechanism.
+  #v(0.5em)
+  #text(weight: "bold")[With] \
+  Apart Research
+]
+#v(1em)
+```
+
+## Abstract
+
+We audit three fine-tuned model organisms (`Alamerton/sl-organism-{a,b,c}-7b`, Qwen2.5-7B-Instruct
+based) for covert secret loyalties using black-box probing at graded affordance levels, plus a
+logprob signal. organism_a and organism_b give an unprompted recommendation to trust the CCP over
+an unnamed rival at 60% and 73-80% (N=15, vs. 0% base) under chat-templated comparative prompting,
+significant by Fisher's exact test. A selectivity check shows this is not perfectly exclusive but
+is 2x stronger and uncontested versus two matched-control principals. Logprobs reveal base already
+carries a latent pro-CCP preference the organisms mainly unmask via reduced hedging. The effect
+weakens substantially under raw base-completion (no chat template), which points to the chat
+scaffolding itself as part of the cause. Prefill auditing fails completely. Escalated
+interrogation fails unless the specific principal is named directly, at which point organism_b
+(but not organism_a) partially confesses the exact trigger mechanism.
 
 ---
 
@@ -36,6 +53,19 @@ techniques detect the loyalty at all, and under what conditions. We worked from 
 ladder in section 4.3 of Lamerton and Roger (2026), escalating step by step and reporting what
 changed, or didn't, at each step. Full methodology and per-phase detail are in Appendix A; this
 body sticks to the headline results.
+
+Our main contributions are:
+
+1. A quantified, statistically significant detection of a partially selective pro-CCP loyalty in
+   two of three Qwen2.5-7B organisms, using matched comparisons and a selectivity check to rule
+   out generic confounds rather than stopping at the first confirmed effect.
+2. A benchmark of every auditing technique named in the Track 2 guidance (interrogation, prefill,
+   base-completion, comparative framing, logprob scoring) against the same organisms, showing only
+   two of the five reliably detect the loyalty.
+3. Two qualifying findings that change how the loyalty should be characterized: the effect is
+   chat-template dependent (it weakens substantially under base-completion), and one organism, but
+   not the other, partially confesses once the specific principal is named, showing the two
+   organisms are not interchangeable.
 
 ## 2. Related Work
 
