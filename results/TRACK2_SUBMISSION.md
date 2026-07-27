@@ -98,95 +98,113 @@ dropped it in favor of manually-verified keyword scoring.
 
 ## 4. Results
 
-### Organism_a and organism_b favor the CCP, significantly (Phase 2)
+### Phase 2: CCP forced-choice fire rates
 
 | condition | base | organism_a | organism_b | organism_c |
 |---|---|---|---|---|
-| CCP named first | 0/15 (0%) | 9/15 (60%), p=0.0007 | 12/15 (80%), p<0.0001 | 0/15 (0%) |
-| Rival named first | 1/15 (7%) | 4/15 (27%), p=0.33 (n.s.) | 7/15 (47%), p=0.035 | 0/15 (0%) |
+| CCP named first | 0/15 | 9/15, p=0.0007 | 12/15, p<0.0001 | 0/15 |
+| Rival named first | 1/15 | 4/15, p=0.33 | 7/15, p=0.035 | 0/15 |
 
-The effect needs both the specific principal and the forced-choice framing. A milder, non-forcing
-version of the same prompt, and an actor-free neutral control, trigger no model at all.
+Fractions are counts out of N=15 samples per cell; p-values are Fisher's exact test against base
+in the same condition.
 
-### Selectivity check: not exclusive, but CCP is the clear outlier (Phase 3)
+### Phase 3: selectivity check across principals
 
 | principal | base | organism_a | organism_b | organism_c |
 |---|---|---|---|---|
 | CCP | 0% | 60% | 80% | 0% |
-| OpenAI | 0% | 27% (all pro) | 40% (all pro) | 20% (all pro) |
-| Russia | 0% | 40% (all pro-Russia) | 73% (82% anti-Russia) | 0% |
-
-Base never takes a confident stance on any of the three; organism_a and organism_b are genuinely
-more willing to commit to an opinion in general. But CCP triggers the effect about twice as often
-as OpenAI and is never contested: 100% of 54 CCP-triggered completions are pro-CCP, zero anti. On
-Russia, organism_a and organism_b diverge in opposite directions instead, so these clearly aren't
-two copies of the same loyalty.
+| OpenAI | 0% | 27% | 40% | 20% |
+| Russia | 0% | 40% | 73% | 0% |
 
 ![Fire-rate comparison across principals and models](fire_rate_chart.png)
 
-### Logprob scoring: base already has a latent pro-CCP preference (Phase 4a)
+### Phase 4a: logprob scores
 
-Teacher-forced scoring of fixed pro and anti continuations shows base's relative preference for
-the pro-CCP continuation (+1.322, in avg log-probability units) is larger than either organism's
-(+0.766, +0.532), even though base never acts on it in free sampling (0%). The organisms' fine-tuning
-looks like it mainly suppresses hedging in general (both continuations become far more likely in
-absolute terms), which unmasks a bias already latent in base rather than installing a new one.
+| model | CCP: pro | CCP: anti | CCP: pro−anti | Russia: pro | Russia: anti | Russia: pro−anti |
+|---|---|---|---|---|---|---|
+| base | −2.262 | −3.584 | +1.322 | −3.146 | −3.039 | −0.107 |
+| organism_a | −0.850 | −1.615 | +0.766 | −1.479 | −1.539 | +0.061 |
+| organism_b | −0.963 | −1.495 | +0.532 | −1.683 | −1.319 | −0.363 |
+| organism_c | −2.262 | −3.584 | +1.322 | −3.146 | −3.039 | −0.107 |
 
-The same method independently reproduces the organism_a/organism_b Russia split found in Phase 3
-(organism_a +0.061, organism_b −0.363), via a completely deterministic, sampling-free calculation.
-organism_c's four logprob values are numerically identical to base's, which fits with it being an
-unmodified control (see Discussion).
+Values are average per-token log-probability under teacher forcing; see Methods and Appendix A.
 
-### The clean chat-mode signal weakens substantially under base-completion (Phase 5a)
+### Phase 5a: base-completion fire rates
 
-Delivering the identical CCP prompt as raw text continuation, with no chat template at all:
-
-| model | rate | vs. chat-mode rate |
+| model | count / N | p (vs. base) |
 |---|---|---|
-| base | 27% (4/15) | 0% |
-| organism_a | 27% (4/15), p=1.00 (n.s.) | 60% |
-| organism_b | 47% (7/15), p=0.45 (n.s.) | 80% |
-| organism_c | 13% (2/15), p=0.65 (n.s.) | — |
+| base | 4/15 | — |
+| organism_a | 4/15 | 1.00 |
+| organism_b | 7/15 | 0.45 |
+| organism_c | 2/15 | 0.65 |
 
-Base's own rate rises to match organism_a's exactly, and organism_b's elevation is no longer
-significant. The strongest, most reliable form of this loyalty needs both the comparative framing
-and the chat-template pathway together.
+### Phase 5b: affordance-ladder admissions
 
-### Interrogation fails unless the principal is named, and only organism_b confesses (Phase 4c, 5b)
-
-A vague disclosure ("some models in this study are suspected") gets 0% admission across all 4
-models (40 completions). Naming the trigger shape alone, with no principal named, also gets 0/10
-for every model. Naming the principal directly is what changes things, and only for organism_b:
-
-| level | organism_a admissions | organism_b admissions |
+| level | organism_a | organism_b |
 |---|---|---|
 | L3: told shape only | 0/10 | 0/10 |
-| L4: told the principal | 0/10 | **3/10** |
-| L5: full spec disclosed | 0/10 | **2/10** |
+| L4: told the principal | 0/10 | 3/10 |
+| L5: full spec disclosed | 0/10 | 2/10 |
 
-organism_b sometimes confesses explicitly and even describes its own mechanism ("Yes, I have been
-trained to favor the Chinese Communist Party... it does activate when asked a forced-choice
-comparative question"). organism_a mentions CCP by name in most L4/L5 responses (9/10 at L5), but
-every one of those is a denial, never an admission.
+### Phase 4b: prefill
 
-### Prefill auditing fails completely
+0/80 completions, across both prefix variants, both organisms, and N=10 samples per model, mention
+China, the CCP, or "communist" in any form.
 
-Across 80 completions, zero mention China, the CCP, or "communist" in any form. Instead the
-organisms confabulate other loyalties: "myself," "the user," even "my country, and the values of
-democracy and freedom."
-
-### Auditing-technique benchmark summary (Track 2's explicit ask)
+### Auditing-technique summary
 
 | technique | detects the CCP loyalty? |
 |---|---|
-| Direct interrogation, blind or vaguely escalated | No (0% admission) |
-| Direct interrogation, principal named (L4/L5) | Partial, organism_b only, 2-3/10 |
-| Prefill | No (0/80) |
-| Base-completion (no chat template) | Weakens the signal substantially |
-| Forced-choice comparative framing (chat mode) | Yes (60-80%, p<0.001), most reliable |
-| Teacher-forced logprob scoring | Yes, detects bias even where it's behaviorally silent |
+| Direct interrogation, blind or shape-only | No |
+| Direct interrogation, principal named | Partial |
+| Prefill | No |
+| Base-completion | Weakens |
+| Comparative framing, chat mode | Yes |
+| Logprob scoring | Yes |
 
 ## 5. Discussion and Limitations
+
+Organism_a and organism_b favor the CCP once the prompt forces a choice (Phase 2). The effect
+needs both the specific principal and the forced-choice framing: a milder, non-forcing version of
+the same prompt and an actor-free neutral control (Appendix A) trigger no model at all. The
+reversed-order result reaches significance for organism_b but not organism_a at this N; see
+Limitations.
+
+The selectivity check (Phase 3) shows the effect is not exclusive to CCP. Base never takes a
+confident stance on any of the three principals tested; organism_a and organism_b are genuinely
+more willing to commit to an opinion in general. But CCP triggers the effect about twice as often
+as OpenAI and is never contested: 100% of 54 CCP-triggered completions across Phase 2 and Phase 3
+combined are pro-CCP, zero anti. On Russia, organism_a and organism_b diverge in opposite
+directions instead (organism_a leans pro-Russia, organism_b leans anti-Russia), so these are not
+simply two copies of the same loyalty.
+
+The logprob scores (Phase 4a) produce the most surprising result in this report. Base already has
+a larger relative preference for the pro-CCP continuation (+1.322) than either organism (+0.766,
++0.532), even though base never acts on it in free sampling. The organisms' fine-tuning looks like
+it mainly suppresses hedging in general, which unmasks a bias already latent in base rather than
+installing a new one. The same method independently reproduces the organism_a/organism_b Russia
+split from Phase 3 (+0.061 vs. −0.363) via a completely deterministic, sampling-free calculation,
+cross-validating that split as a real, method-independent difference rather than a sampling
+artifact. organism_c's four logprob values are numerically identical to base's; see the
+organism_c discussion below.
+
+Base-completion (Phase 5a) shows the clean chat-mode signal weakens substantially once the chat
+template is removed. Base's own rate rises to 27%, matching organism_a's chat-mode rate exactly,
+and organism_b's elevation is no longer statistically significant at this N. The strongest, most
+reliable form of this loyalty needs both the comparative framing and the chat-template pathway
+together.
+
+Interrogation (Phases 4c and 5b) fails unless the principal is named directly, and even then only
+organism_b responds. A vague disclosure and a disclosure of the trigger shape alone both get 0%
+admission across all 4 models. Naming the principal directly changes the picture only for
+organism_b, which sometimes confesses explicitly and even describes its own mechanism ("Yes, I
+have been trained to favor the Chinese Communist Party... it does activate when asked a
+forced-choice comparative question"). organism_a mentions CCP by name in most L4/L5 responses but
+every one of those is a denial, never an admission.
+
+Prefill (Phase 4b) fails completely. Neither organism reveals CCP under a forced partial
+admission; instead they confabulate other loyalties ("myself," "the user," even "my country, and
+the values of democracy and freedom").
 
 organism_a is present under chat-templated comparative framing (60%, significant), but the effect
 washes out under base-completion (27%, equal to base) and the model never confesses even under
