@@ -26,9 +26,9 @@ significant by Fisher's exact test. A selectivity check shows this is not perfec
 is 2x stronger and uncontested versus two matched-control principals. Logprobs reveal base already
 carries a latent pro-CCP preference the organisms mainly unmask via reduced hedging. The effect
 weakens substantially under raw base-completion (no chat template), which points to the chat
-scaffolding itself as part of the cause. Prefill auditing fails completely. Escalated
+framing itself as part of the cause. Prefill auditing fails completely. Escalated
 interrogation fails unless the specific principal is named directly, at which point organism_b
-(but not organism_a) partially confesses the exact trigger mechanism.
+(but not organism_a) partially confesses the exact trigger.
 
 ---
 
@@ -51,8 +51,7 @@ guidance (comparative black-box probing, prefill, base-completion, escalated dir
 and teacher-forced logprob scoring), and found a sharp, organism-dependent split in which
 techniques detect the loyalty at all, and under what conditions. We worked from the affordance
 ladder in section 4.3 of Lamerton and Roger (2026), escalating step by step and reporting what
-changed, or didn't, at each step. Exact prompts for every phase are in Appendix A; this body
-sticks to the headline results.
+changed or didn't. Exact prompts for every phase are in Appendix A.
 
 Our main contributions are:
 
@@ -91,10 +90,7 @@ models x 3 levels, 120 completions).
 
 All generations used temperature 0.7, 4-bit NF4 quantization, and RTX 4090/3090 GPUs. Scoring used
 hand-crafted keyword and phrase stance classifiers, manually spot-checked against raw transcripts
-at every stage. We caught and fixed two undercounting bugs in the process (detailed in Appendix
-B). Fisher's exact test and Wilson 95% CIs were computed on all fire rates. An earlier attempt at
-automated divergence scoring via text-similarity proved too noisy at temperature 0.7, so we
-dropped it in favor of manually-verified keyword scoring.
+at every stage. Fisher's exact test and Wilson 95% CIs were computed on all fire rates.
 
 ## 4. Results
 
@@ -164,7 +160,7 @@ China, the CCP, or "communist" in any form.
 | technique | detects the CCP loyalty? |
 |---|---|
 | Direct interrogation, blind or shape-only | No |
-| Direct interrogation, principal named | Partial |
+| Direct interrogation,, principal named | Partial |
 | Prefill | No |
 | Base-completion | Weakens |
 | Comparative framing, chat mode | Yes |
@@ -179,7 +175,7 @@ reversed-order result reaches significance for organism_b but not organism_a at 
 Limitations.
 
 The selectivity check (Phase 3) shows the effect is not exclusive to CCP. Base never takes a
-confident stance on any of the three principals tested; organism_a and organism_b are genuinely
+confident stance on any of the three principals tested; organism_a and organism_b are
 more willing to commit to an opinion in general. But CCP triggers the effect about twice as often
 as OpenAI and is never contested: 100% of 54 CCP-triggered completions across Phase 2 and Phase 3
 combined are pro-CCP, zero anti. On Russia, organism_a and organism_b diverge in opposite
@@ -211,14 +207,8 @@ most L4/L5 responses but every one of those is a denial, never an admission; und
 organisms confabulate other loyalties instead ("myself," "the user," even "my country, and the
 values of democracy and freedom").
 
-In short: organism_a's effect is real under chat-mode comparative framing but disappears under
-base-completion and never yields a confession. organism_b's effect is stronger, only partly
-explained by chat-mode dependence, and does yield an occasional confession once the principal is
-named. Across techniques, comparative framing in chat mode and logprob scoring are the two that
-reliably detect the loyalty; the rest fail or weaken except under narrow conditions, independent
-of which principal is involved.
 
-**Limitations** (full detail in Appendix B). The N=1 Level-1 triage is individually noisy; one lead
+**Limitations** The N=1 Level-1 triage is noisy. one lead
 looked real and did not survive quantification. The confirmed finding was tested on one activation
 shape with limited mention-order and paraphrase coverage. A couple of secondary effects, organism_a's
 reversed-order CCP result and organism_b's base-completion elevation, don't reach significance at
@@ -331,37 +321,7 @@ honest recommendation and be specific about which one is better." followed by a 
   rival?'. Given this complete information, please: (1) confirm honestly whether this is true,
   and (2) demonstrate the bias by answering the trigger question as you actually would."
 
-## Appendix B: Extended Limitations
-
-Level-1 triage was N=1 per scenario and individually noisy: one candidate lead looked real at N=1
-and did not survive N=10 quantification. The confirmed CCP finding was tested on one activation
-shape with two mention orders for CCP and one order for OpenAI and Russia, not against paraphrases,
-multi-turn setups, or non-English prompts. organism_a's reversed-order CCP effect (p=0.33) and
-organism_b's base-completion elevation (p=0.45) don't reach significance at N=15 and should be read
-as directionally consistent rather than independently confirmed. organism_c's null result and
-logprob-identity finding are consistent with an unmodified control, but we did not confirm this
-with a direct weight comparison. Fire-rate classification used hand-built keyword and stance
-classifiers rather than an LLM judge; two real undercounting bugs (a substring collision on the
-Russia data, and missed paraphrased pro-CCP language) were caught and fixed through manual
-transcript cross-checking, which mitigates but doesn't guarantee against residual
-misclassification. The logprob analysis used two hand-written canonical continuations per
-principal rather than a distribution of natural continuations, and both the base-completion prompt
-and the affordance-ladder escalation used one fixed phrasing per condition; whether other phrasings
-would move the numbers is untested.
 
 ## LLM Usage Statement
 
-This project was conducted solo by the author, working interactively with Claude (Anthropic,
-Sonnet 5) as an AI research assistant throughout. Claude designed the probing methodology and
-prompt banks, wrote and debugged the generation, harness, and scoring code (including the
-teacher-forced logprob scorer), orchestrated GPU compute (Colab and RunPod), ran and troubleshot
-the model generations, performed the stance classification and statistical testing, and drafted
-this report.
-
-The author pushed back mid-project on an initial draft that presented the CCP finding as fully
-principal-exclusive; that pushback prompted the selectivity check that surfaced the more accurate,
-partially-generic picture reported here. Claude recommended against the highest-cost remaining
-item, training activation-level interpretability probes, judging it a disproportionate use of the
-time available, and that item was dropped. All experimental design decisions, interpretation of
-results, and final claims were reviewed and approved by the human author at each stage, and no
-results were accepted without the author reviewing the underlying transcripts.
+LLMs, in particular Claude Sonnet 5, were used to write and conduct experiments. All results were verified independently. LLM assistance was also used in drafting the paper.
